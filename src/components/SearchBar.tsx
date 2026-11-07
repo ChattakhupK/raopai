@@ -60,8 +60,8 @@ export function SearchBar({ places, getCenter, onPickResult, onPickPlace }: Prop
 
   return (
     <div ref={wrap} className="relative">
-      <div className="flex items-center gap-2 rounded-2xl bg-white px-4 h-12 shadow-[0_4px_24px_rgba(0,0,0,0.08)] ring-1 ring-black/5 focus-within:ring-brand/40 transition">
-        <SearchIcon className="shrink-0 text-muted" />
+      <div className="flex h-10 items-center gap-2 rounded-xl bg-white px-3 shadow-[0_2px_12px_rgba(0,0,0,0.06)] ring-1 ring-black/5 transition focus-within:ring-brand/40 md:bg-zinc-50 md:shadow-none md:ring-black/[0.04]">
+        <SearchIcon width={16} height={16} className="shrink-0 text-zinc-400" />
         <input
           value={q}
           onChange={(e) => {
@@ -78,7 +78,7 @@ export function SearchBar({ places, getCenter, onPickResult, onPickPlace }: Prop
             if (e.key === "Escape") close();
           }}
           placeholder="ค้นหาสถานที่ คาเฟ่ ร้านอาหาร…"
-          className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-zinc-400"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-zinc-400"
           enterKeyHint="search"
         />
         {loading && <Spinner className="text-brand" />}
@@ -90,7 +90,7 @@ export function SearchBar({ places, getCenter, onPickResult, onPickPlace }: Prop
       </div>
 
       {showDropdown && (
-        <div className="animate-fade absolute left-0 right-0 top-14 z-[1100] max-h-[60dvh] overflow-y-auto rounded-2xl bg-white p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
+        <div className="animate-fade absolute left-0 right-0 top-12 z-[1100] max-h-[60dvh] overflow-y-auto rounded-2xl bg-white p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
           {mine.length > 0 && (
             <>
               <div className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-muted">ที่ที่เราเคยไป</div>

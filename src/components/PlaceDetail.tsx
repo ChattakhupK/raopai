@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { fmt } from "@/lib/client";
-import { thumb } from "@/lib/photos";
 import type { Place } from "@/lib/types";
+import { Slideshow } from "./Slideshow";
 import { CalendarIcon, CloseIcon, EditIcon, NavigateIcon, PinIcon, Spinner, TrashIcon } from "./icons";
 
 type Props = {
@@ -20,20 +20,14 @@ export function PlaceDetail({ place, onClose, onEdit, onDelete, onOpenPhoto }: P
   return (
     <div className="flex flex-col gap-4">
       {place.photos.length > 0 && (
-        <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-2 overflow-x-auto px-5">
-          {place.photos.map((url, i) => (
-            <button
-              key={url}
-              onClick={() => onOpenPhoto(i)}
-              className={`relative shrink-0 snap-center overflow-hidden rounded-2xl bg-zinc-100 ${
-                place.photos.length === 1 ? "aspect-[4/3] w-full" : "aspect-[4/5] w-[70%] sm:w-[60%]"
-              }`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={thumb(url, 900)} alt="" loading="lazy" className="size-full object-cover" />
-            </button>
-          ))}
-        </div>
+        <Slideshow
+          photos={place.photos}
+          width={1000}
+          controls
+          interval={4000}
+          onOpen={onOpenPhoto}
+          className="-mx-5 -mt-3 aspect-[4/3] md:mx-0 md:mt-0 md:rounded-2xl"
+        />
       )}
 
       <div className="flex items-start justify-between gap-3">

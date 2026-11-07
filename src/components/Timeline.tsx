@@ -24,14 +24,14 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {years.length > 1 && (
-        <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
+        <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4">
           {[null, ...years].map((y) => (
             <button
               key={y ?? "all"}
               onClick={() => onYear(y)}
-              className={`h-8 shrink-0 rounded-full px-3.5 text-sm font-medium transition ${
+              className={`h-7 shrink-0 rounded-full px-3 text-xs font-medium transition ${
                 year === y ? "bg-brand text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
               }`}
             >
@@ -44,7 +44,7 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
       {loading && places.length === 0 && (
         <div className="flex flex-col gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-16 animate-pulse rounded-2xl bg-zinc-100" />
+            <div key={i} className="h-12 animate-pulse rounded-xl bg-zinc-100" />
           ))}
         </div>
       )}
@@ -61,7 +61,7 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
 
       {groups.map((g) => (
         <section key={g.key}>
-          <h3 className="sticky top-0 z-10 -mx-1 mb-1 bg-white/90 px-1 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted backdrop-blur">
+          <h3 className="sticky top-0 z-10 -mx-1 bg-white/90 px-1 py-1 text-[11px] font-medium text-zinc-400 backdrop-blur">
             {g.label} <span className="font-normal">· {g.items.length} ที่</span>
           </h3>
           <ul className="flex flex-col">
@@ -69,25 +69,25 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
               <li key={p.id}>
                 <button
                   onClick={() => onSelect(p.id)}
-                  className={`flex w-full items-center gap-3 rounded-2xl p-2 text-left transition ${
+                  className={`flex w-full items-center gap-2.5 rounded-xl px-1.5 py-1.5 text-left transition ${
                     p.id === activeId ? "bg-brand-soft" : "hover:bg-zinc-50"
                   }`}
                 >
-                  <div className="size-14 shrink-0 overflow-hidden rounded-xl bg-brand-soft">
+                  <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-brand-soft">
                     {p.photos[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumb(p.photos[0], 160)} alt="" loading="lazy" className="size-full object-cover" />
+                      <img src={thumb(p.photos[0], 120)} alt="" loading="lazy" className="size-full object-cover" />
                     ) : (
                       <div className="grid size-full place-items-center text-brand">
-                        <HeartIcon width={20} height={20} />
+                        <HeartIcon width={14} height={14} />
                       </div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{p.name}</p>
-                    <p className="truncate text-xs text-muted">{p.address || "—"}</p>
+                    <p className="truncate text-sm font-medium">{p.name}</p>
+                    <p className="truncate text-[11px] text-zinc-400">{p.address || "—"}</p>
                   </div>
-                  <span className="shrink-0 text-xs font-medium text-brand">{fmt.date(p.visitedOn).replace(/ \d{4}$/, "")}</span>
+                  <span className="shrink-0 text-[11px] font-medium text-brand">{fmt.date(p.visitedOn).replace(/ \d{4}$/, "")}</span>
                 </button>
               </li>
             ))}

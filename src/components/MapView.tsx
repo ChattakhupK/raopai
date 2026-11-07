@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef } from "react";
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import type { Place } from "@/lib/types";
 import { thumb } from "@/lib/photos";
@@ -53,9 +53,14 @@ export type MapViewProps = {
   onSelect: (id: string) => void;
   onMapClick?: (ll: { lat: number; lng: number }) => void;
   onReady: (m: L.Map) => void;
+  /** Place whose popup is open, with its rendered content. */
+  popup: { place: Place; content: React.ReactNode } | null;
+  onPopupClose: (id: string) => void;
+  /** Keep the popup clear of floating UI (search bar, side panel, buttons). */
+  popupPadding: { topLeft: [number, number]; bottomRight: [number, number] };
 };
 
-export default function MapView({ places, activeId, draft, onSelect, onMapClick, onReady }: MapViewProps) {
+export default function MapView({ places, activeId, draft, onSelect, onMapClick, onReady, popup, onPopupClose, popupPadding }: MapViewProps) {
   const fitted = useRef(false);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -72,9 +77,10 @@ export default function MapView({ places, activeId, draft, onSelect, onMapClick,
     const m = mapRef.current;
     if (!m || fitted.current || places.length === 0) return;
     fitted.current = true;
+    if (activeId) return; // a place was already picked — don't yank the view away from it
     if (places.length === 1) m.setView([places[0].lat, places[0].lng], 13);
     else m.fitBounds(L.latLngBounds(places.map((p) => [p.lat, p.lng])), { padding: [60, 60], maxZoom: 13 });
-  }, [places]);
+  }, [places, activeId]);
 
   return (
     <MapContainer
@@ -99,6 +105,20 @@ export default function MapView({ places, activeId, draft, onSelect, onMapClick,
           eventHandlers={{ click: () => onSelect(p.id) }}
         />
       ))}
+      {popup && (
+        <Popup
+          key={popup.place.id}
+          position={[popup.place.lat, popup.place.lng]}
+          offset={popup.place.photos[0] ? [0, -46] : [0, -36]}
+          closeButton={false}
+          className="raopai-popup"
+          autoPanPaddingTopLeft={popupPadding.topLeft}
+          autoPanPaddingBottomRight={popupPadding.bottomRight}
+          eventHandlers={{ remove: () => onPopupClose(popup.place.id) }}
+        >
+          {popup.content}
+        </Popup>
+      )}
       {draft && <Marker position={[draft.lat, draft.lng]} icon={DRAFT_ICON} zIndexOffset={2000} />}
     </MapContainer>
   );

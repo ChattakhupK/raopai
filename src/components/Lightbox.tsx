@@ -20,6 +20,7 @@ export function Lightbox({ photos, start, onClose }: { photos: string[]; start: 
 
   return (
     <div
+      data-lightbox
       className="animate-fade fixed inset-0 z-[3000] flex items-center justify-center bg-black/95"
       onClick={onClose}
       onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
