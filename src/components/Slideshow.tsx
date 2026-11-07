@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { thumb } from "@/lib/photos";
-import { ChevronLeftIcon } from "./icons";
+import { isVideo, thumb, videoSrc } from "@/lib/photos";
+import { ChevronLeftIcon, PlayIcon } from "./icons";
 
 type Props = {
   photos: string[];
@@ -15,7 +15,10 @@ type Props = {
   onOpen?: (index: number) => void;
 };
 
-/** Auto-advancing crossfade slideshow. Pauses on hover/touch. */
+/**
+ * Auto-advancing crossfade slideshow of photos and videos. Pauses on hover/touch.
+ * A video slide plays muted and advances when it ends.
+ */
 export function Slideshow({ photos, width, className = "", interval = 3500, controls = false, onOpen }: Props) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -25,13 +28,15 @@ export function Slideshow({ photos, width, className = "", interval = 3500, cont
 
   const go = (d: number) => setIndex((v) => (v + d + n) % n);
 
-  // One timeout per slide: a manual change restarts the countdown.
+  const currentIsVideo = n > 0 && isVideo(photos[i]);
+
+  // One timeout per photo slide (a manual change restarts it). Video slides advance on `ended`.
   useEffect(() => {
-    if (n < 2 || paused) return;
+    if (n < 2 || paused || currentIsVideo) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = setTimeout(() => setIndex((v) => (v + 1) % n), interval);
     return () => clearTimeout(t);
-  }, [i, n, paused, interval]);
+  }, [i, n, paused, interval, currentIsVideo]);
 
   if (!n) return null;
 
@@ -65,13 +70,28 @@ export function Slideshow({ photos, width, className = "", interval = 3500, cont
             onClick={() => onOpen?.(k)}
             className={`absolute inset-0 transition-opacity duration-700 ease-out ${k === i ? "z-[1] opacity-100" : "opacity-0"}`}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={thumb(url, width)}
-              alt=""
-              draggable={false}
-              className="size-full select-none object-cover"
-            />
+            {isVideo(url) && k === i ? (
+              <video
+                src={videoSrc(url)}
+                poster={thumb(url, width)}
+                className="size-full object-cover"
+                autoPlay
+                muted
+                playsInline
+                loop={n === 1}
+                preload="metadata"
+                onEnded={() => go(1)}
+                onError={() => n > 1 && go(1)}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={thumb(url, width)} alt="" draggable={false} className="size-full select-none object-cover" />
+            )}
+            {isVideo(url) && (
+              <span className="pointer-events-none absolute left-2 top-2 grid size-6 place-items-center rounded-full bg-black/45 text-white backdrop-blur">
+                <PlayIcon width={11} height={11} />
+              </span>
+            )}
           </button>
         ) : null
       )}

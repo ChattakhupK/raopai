@@ -1,5 +1,47 @@
 "use client";
 import type { Place, PlaceInput, SearchResult } from "./types";
+import { MAX_VIDEO_BYTES } from "./photos";
+
+type Signature = {
+  cloudName: string;
+  apiKey: string;
+  kind: "image" | "video";
+  params: Record<string, string | number>;
+  signature: string;
+};
+
+async function uploadSigned(
+  file: File,
+  kind: "image" | "video",
+  raw: boolean,
+  onProgress?: (p: number) => void
+): Promise<{ url: string }> {
+  const sig = await fetch(`/api/upload?kind=${kind}${raw ? "&raw=1" : ""}`, { method: "POST" }).then((r) =>
+    json<Signature>(r)
+  );
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("api_key", sig.apiKey);
+  fd.append("signature", sig.signature);
+  for (const [k, v] of Object.entries(sig.params)) fd.append(k, String(v));
+
+  // XHR (not fetch) so large videos can report upload progress.
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${sig.cloudName}/${kind}/upload`);
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
+    xhr.onload = () => {
+      let data: { secure_url?: string; error?: { message?: string } } = {};
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch {}
+      if (xhr.status >= 200 && xhr.status < 300 && data.secure_url) resolve({ url: data.secure_url });
+      else reject(new Error(data.error?.message || "อัปโหลดไม่สำเร็จ"));
+    };
+    xhr.onerror = () => reject(new Error("อัปโหลดไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต"));
+    xhr.send(fd);
+  });
+}
 
 async function json<T>(res: Response): Promise<T> {
   if (res.status === 401) {
@@ -30,28 +72,30 @@ export const api = {
     fetch(`/api/search?reverse=1&lat=${lat}&lng=${lng}`)
       .then((r) => json<SearchResult | null>(r))
       .catch(() => null),
-  /** Browser → Cloudinary signed upload. Returns the stored https URL. */
-  upload: async (file: File) => {
-    const [sig, resized] = await Promise.all([
-      fetch("/api/upload", { method: "POST" }).then((r) =>
-        json<{ cloudName: string; apiKey: string; folder: string; timestamp: number; signature: string }>(r)
-      ),
-      resizeImage(file),
-    ]);
-    const fd = new FormData();
-    fd.append("file", resized);
-    fd.append("api_key", sig.apiKey);
-    fd.append("timestamp", String(sig.timestamp));
-    fd.append("signature", sig.signature);
-    fd.append("folder", sig.folder);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, {
-      method: "POST",
-      body: fd,
-    });
-    const data = (await res.json().catch(() => ({}))) as { secure_url?: string; error?: { message?: string } };
-    if (!res.ok || !data.secure_url) throw new Error(data.error?.message || "อัปโหลดรูปไม่สำเร็จ");
-    return { url: data.secure_url };
+  /**
+   * Browser → Cloudinary signed upload (images are downscaled first). Returns the stored https URL.
+   * onProgress receives 0–1 while bytes are sent.
+   */
+  upload: async (file: File, onProgress?: (p: number) => void): Promise<{ url: string }> => {
+    const video = file.type.startsWith("video/");
+    if (video && file.size > MAX_VIDEO_BYTES) {
+      throw new Error(`วิดีโอใหญ่ ${(file.size / 1048576).toFixed(0)} MB เกิน 100 MB — ลองตัดคลิปให้สั้นลง`);
+    }
+    const body = video ? file : await resizeImage(file);
+    try {
+      return await uploadSigned(body, video ? "video" : "image", false, onProgress);
+    } catch (e) {
+      // Very large clips can't be shrunk during upload — store them as-is instead of failing.
+      if (video && /synchronous|too large/i.test((e as Error).message)) {
+        return uploadSigned(body, "video", true, onProgress);
+      }
+      throw e;
+    }
   },
+  usage: () =>
+    fetch("/api/usage").then((r) =>
+      json<{ usedPercent: number; warnPercent: number; blockPercent: number; storageBytes: number }>(r)
+    ),
 };
 
 /** Downscale to max 1800px JPEG so uploads are fast and small. */

@@ -1,5 +1,5 @@
 // RaoPai service worker — offline viewing of the app shell, map tiles, photos and the last place list.
-const VERSION = "v3";
+const VERSION = "v4";
 const SHELL = `raopai-shell-${VERSION}`;
 const RUNTIME = `raopai-runtime-${VERSION}`;
 const TILES = "raopai-tiles";
@@ -61,6 +61,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
   if (url.hostname === "res.cloudinary.com") {
+    // video streams use Range requests — let the browser handle them directly
+    if (/\.(mp4|mov|webm|m3u8)$/i.test(url.pathname)) return;
     event.respondWith(cacheFirst(req, RUNTIME, 400));
     return;
   }

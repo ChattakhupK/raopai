@@ -60,3 +60,8 @@ export const Spinner = ({ className = "" }: { className?: string }) => (
     <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
   </svg>
 );
+export const PlayIcon = (p: P) => (
+  <svg {...base({ fill: "currentColor", stroke: "none", ...p })}>
+    <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" />
+  </svg>
+);

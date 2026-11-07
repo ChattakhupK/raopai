@@ -1,8 +1,8 @@
 "use client";
 import { fmt } from "@/lib/client";
 import type { Place } from "@/lib/types";
-import { HeartIcon } from "./icons";
-import { thumb } from "@/lib/photos";
+import { HeartIcon, PlayIcon } from "./icons";
+import { isVideo, thumb } from "@/lib/photos";
 
 type Props = {
   places: Place[];
@@ -73,7 +73,7 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
                     p.id === activeId ? "bg-brand-soft" : "hover:bg-zinc-50"
                   }`}
                 >
-                  <div className="size-10 shrink-0 overflow-hidden rounded-lg bg-brand-soft">
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-brand-soft">
                     {p.photos[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={thumb(p.photos[0], 120)} alt="" loading="lazy" className="size-full object-cover" />
@@ -81,6 +81,11 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
                       <div className="grid size-full place-items-center text-brand">
                         <HeartIcon width={14} height={14} />
                       </div>
+                    )}
+                    {p.photos.some(isVideo) && (
+                      <span className="absolute bottom-0.5 right-0.5 grid size-3.5 place-items-center rounded-full bg-black/55 text-white">
+                        <PlayIcon width={7} height={7} />
+                      </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">

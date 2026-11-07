@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeftIcon, CloseIcon } from "./icons";
-import { thumb } from "@/lib/photos";
+import { isVideo, thumb, videoSrc } from "@/lib/photos";
 
 export function Lightbox({ photos, start, onClose }: { photos: string[]; start: number; onClose: () => void }) {
   const [i, setI] = useState(start);
@@ -31,8 +31,23 @@ export function Lightbox({ photos, start, onClose }: { photos: string[]; start: 
         touchX.current = null;
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={thumb(photos[i], 1800)} alt="" className="max-h-full max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
+      {isVideo(photos[i]) ? (
+        <video
+          key={photos[i]}
+          src={videoSrc(photos[i])}
+          poster={thumb(photos[i], 1280)}
+          controls
+          autoPlay
+          playsInline
+          className="max-h-full max-w-full"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={thumb(photos[i], 1800)} alt="" className="max-h-full max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
+      )}
       <button aria-label="ปิด" onClick={onClose} className="safe-top absolute right-4 top-0 mt-2 grid size-10 place-items-center rounded-full bg-white/10 text-white">
         <CloseIcon />
       </button>
