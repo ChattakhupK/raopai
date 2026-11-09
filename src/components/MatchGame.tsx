@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, fmt, todayYMD } from "@/lib/client";
 import type { MatchDay, MatchRound, MatchStats } from "@/lib/types";
 import { readMe, WhoPicker, type Who } from "./DailyQuestion";
-import { HeartIcon, Spinner } from "./icons";
+import { CloseIcon, HeartIcon, LockIcon, Spinner } from "./icons";
 
 const PER_DAY = 5;
 
@@ -23,7 +23,7 @@ function RoundRow({ r }: { r: MatchRound }) {
   return (
     <li className="flex items-start gap-2.5 rounded-2xl bg-zinc-50 px-3.5 py-2.5">
       <span
-        className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${
+        className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-medium ${
           r.matched === true
             ? "bg-brand text-white"
             : r.matched === false
@@ -31,7 +31,7 @@ function RoundRow({ r }: { r: MatchRound }) {
               : "bg-white text-zinc-400 ring-1 ring-line"
         }`}
       >
-        {r.matched === true ? <HeartIcon width={10} height={10} /> : r.matched === false ? "✕" : r.slot + 1}
+        {r.matched === true ? <HeartIcon width={10} height={10} /> : r.matched === false ? <CloseIcon width={10} height={10} strokeWidth={2.4} /> : r.slot + 1}
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-medium leading-snug">{r.question}</p>
@@ -39,7 +39,13 @@ function RoundRow({ r }: { r: MatchRound }) {
           <span className="text-brand">คุณ</span> {opt(r, r.mine) ?? "—"}
           <span className="mx-1.5 text-zinc-300">·</span>
           <span className="text-brand">แฟน</span>{" "}
-          {r.theirs !== null ? opt(r, r.theirs) : r.theirsAnswered ? "🤫" : "รอเลือก…"}
+          {r.theirs !== null ? (
+            opt(r, r.theirs)
+          ) : r.theirsAnswered ? (
+            <LockIcon width={11} height={11} className="inline -mt-0.5" aria-label="ซ่อนไว้" />
+          ) : (
+            "รอเลือก…"
+          )}
         </p>
       </div>
     </li>
@@ -140,7 +146,7 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
             <p className="mt-0.5 text-[11px] text-brand/70">
               {allRevealed
                 ? data.matched === PER_DAY
-                  ? "รู้ใจกันทุกข้อเลย ♥"
+                  ? "รู้ใจกันทุกข้อเลย"
                   : data.matched >= 3
                     ? "รู้ใจกันดีมาก"
                     : "พรุ่งนี้มาลองใหม่นะ"
@@ -188,7 +194,13 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
             ))}
           </div>
           <p className="text-[11px] text-muted">
-            {current.theirsAnswered ? "แฟนตอบข้อนี้แล้ว 🤫 เลือกก่อนถึงจะเห็นนะ" : "เลือกแล้วเปลี่ยนไม่ได้นะ"}
+            {current.theirsAnswered ? (
+              <span className="inline-flex items-center gap-1">
+                <LockIcon width={12} height={12} /> แฟนตอบข้อนี้แล้ว เลือกก่อนถึงจะเห็นนะ
+              </span>
+            ) : (
+              "เลือกแล้วเปลี่ยนไม่ได้นะ"
+            )}
           </p>
         </div>
       )}
@@ -208,7 +220,7 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
         <p className="text-center text-[11px] text-muted">
           ใจตรงกันแล้ว <span className="font-medium text-brand">{stats.matched}</span> จาก {stats.played} ข้อ ({pct}%)
           {stats.perfectDays > 0 && ` · ตรงครบ 5 ข้อ ${stats.perfectDays} วัน`}
-          {stats.streak > 1 && ` · 🔥 เล่นติดกัน ${stats.streak} วัน`}
+          {stats.streak > 1 && ` · เล่นติดกัน ${stats.streak} วัน`}
         </p>
       )}
 
@@ -223,8 +235,8 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
                 <div key={d.day} className="rounded-2xl border border-line p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[11px] text-muted">{fmt.date(d.day)}</p>
-                    <span className="text-[11px] font-medium text-brand">
-                      ♥ ตรงกัน {d.matched}/{d.played}
+                    <span className="flex items-center gap-1 text-[11px] font-medium tabular-nums text-brand">
+                      <HeartIcon width={10} height={10} /> ตรงกัน {d.matched}/{d.played}
                     </span>
                   </div>
                   <ul className="mt-2 flex flex-col gap-1.5">

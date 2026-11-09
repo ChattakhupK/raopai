@@ -169,7 +169,7 @@ export function PlaceForm({ draft, onChange, onCancel, onSaved, onMovePin }: Pro
             className="flex size-16 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg border border-dashed border-brand/30 text-brand hover:bg-brand-soft"
           >
             <CameraIcon width={18} height={18} />
-            <span className="text-[10px] font-medium">{videosBlocked ? "เพิ่มรูป" : "รูป/วิดีโอ"}</span>
+            <span className="text-[11px] font-medium">{videosBlocked ? "เพิ่มรูป" : "รูป/วิดีโอ"}</span>
           </button>
           {uploads.map((u) => (
             <div
@@ -177,11 +177,11 @@ export function PlaceForm({ draft, onChange, onCancel, onSaved, onMovePin }: Pro
               className="relative flex size-16 shrink-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-lg bg-zinc-100 text-brand"
             >
               <Spinner className="size-4" />
-              <span className="text-[10px] font-medium tabular-nums">
+              <span className="text-[11px] font-medium tabular-nums">
                 {u.progress < 1 ? `${Math.round(u.progress * 100)}%` : u.video ? "กำลังแปลง" : "…"}
               </span>
               <span className="absolute inset-x-0 bottom-0 h-0.5 bg-brand/20">
-                <span className="block h-full bg-brand transition-all" style={{ width: `${u.progress * 100}%` }} />
+                <span className="block h-full origin-left bg-brand transition-transform" style={{ transform: `scaleX(${u.progress})` }} />
               </span>
             </div>
           ))}
@@ -232,11 +232,11 @@ export function PlaceForm({ draft, onChange, onCancel, onSaved, onMovePin }: Pro
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-brand-dark">{error}</p>}
 
       {/* pinned to the bottom of the sheet so saving is always one tap away */}
-      <div className="sticky bottom-0 -mx-4 bg-gradient-to-t from-white from-70% to-transparent px-4 pb-1 pt-3">
+      <div className="sticky bottom-0 -mx-4 border-t border-line bg-white px-4 pb-1 pt-3">
         <button
           type="submit"
           disabled={saving || uploading > 0}
-          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-medium text-white shadow-[0_4px_14px_rgba(225,29,46,0.25)] transition hover:bg-brand-dark disabled:opacity-60"
+          className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-medium text-white transition hover:bg-brand-dark disabled:opacity-60"
         >
           {saving && <Spinner className="size-4" />}
           {uploading > 0 ? "กำลังอัปโหลด…" : draft.id ? "บันทึกการแก้ไข" : "บันทึกหมุด"}

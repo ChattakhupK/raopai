@@ -75,8 +75,8 @@ export function NoteTicker({ notes, onOpen }: { notes: Note[]; onOpen: () => voi
 
   return (
     <div className="pointer-events-none absolute inset-x-4 top-[calc(max(env(safe-area-inset-top),12px)+52px)] z-[1080] flex justify-center md:left-[382px] md:right-32 md:top-4">
-      <div className="note-float pointer-events-auto max-w-full">
-        <div className="animate-pop flex h-9 max-w-full items-center gap-2 rounded-full bg-white pl-1.5 pr-1 shadow-[0_6px_20px_rgba(225,29,46,0.18)] ring-1 ring-brand/10">
+      <div className="pointer-events-auto max-w-full">
+        <div className="animate-pop flex h-9 max-w-full items-center gap-2 rounded-full bg-white pl-1.5 pr-1 shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
           <button onClick={onOpen} className="flex min-w-0 items-center gap-2 text-left">
             <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand text-white">
               <HeartIcon width={11} height={11} />
@@ -85,7 +85,7 @@ export function NoteTicker({ notes, onOpen }: { notes: Note[]; onOpen: () => voi
               {latest.text}
             </span>
             {active.length > 1 && (
-              <span className="shrink-0 rounded-full bg-brand-soft px-1.5 text-[10px] font-medium tabular-nums text-brand">
+              <span className="shrink-0 rounded-full bg-brand-soft px-1.5 text-[11px] font-medium tabular-nums text-brand">
                 +{active.length - 1}
               </span>
             )}
@@ -258,7 +258,7 @@ export function NotesPanel({
                 send();
               }
             }}
-            placeholder="ฝากข้อความถึงกัน… ♥"
+            placeholder="ฝากข้อความถึงกัน"
             className="max-h-28 min-h-8 flex-1 resize-none bg-transparent py-1.5 text-sm outline-none [field-sizing:content]"
           />
           <button

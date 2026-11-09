@@ -273,7 +273,7 @@ export default function App() {
             setView(null);
             if (year && !p.visitedOn.startsWith(year)) setYear(null);
             setPopupId(p.id);
-            setToast(draft.id ? "บันทึกแล้ว" : "ปักหมุดแล้ว ♥");
+            setToast(draft.id ? "บันทึกแล้ว" : "ปักหมุดแล้ว");
           }}
         />
       );
@@ -439,7 +439,7 @@ export default function App() {
                 setPicking(true);
               }}
               aria-label="ปักหมุดใหม่"
-              className="flex h-10 items-center gap-1 rounded-full bg-brand pl-3 pr-4 text-white shadow-[0_4px_14px_rgba(225,29,46,0.3)] transition hover:bg-brand-dark active:scale-95"
+              className="flex h-10 items-center gap-1 rounded-full bg-brand pl-3 pr-4 text-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition hover:bg-brand-dark active:scale-95"
             >
               {resolving ? <Spinner className="size-4" /> : <PlusIcon width={16} height={16} strokeWidth={2.2} />}
               <span className="whitespace-nowrap text-sm font-medium">ปักหมุด</span>

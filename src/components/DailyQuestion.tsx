@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, fmt, todayYMD } from "@/lib/client";
 import { PARTNERS } from "@/lib/config";
 import type { DailyDay } from "@/lib/types";
-import { EditIcon, HeartIcon, Spinner } from "./icons";
+import { EditIcon, HeartIcon, LockIcon, Spinner } from "./icons";
 
 export type Who = "a" | "b";
 const ME_KEY = "raopai_me";
@@ -148,7 +148,13 @@ export function DailyQuestion({ onAnswered }: { onAnswered?: () => void }) {
           />
           <div className="flex items-center justify-between gap-2">
             <p className="text-[11px] text-muted">
-              {data.theirsAnswered ? "แฟนตอบแล้ว 🤫 ตอบก่อนถึงจะเห็นนะ" : "ตอบแล้วจะเห็นคำตอบของแฟน"}
+              {data.theirsAnswered ? (
+                <span className="inline-flex items-center gap-1">
+                  <LockIcon width={12} height={12} /> แฟนตอบแล้ว ตอบก่อนถึงจะเห็นนะ
+                </span>
+              ) : (
+                "ตอบแล้วจะเห็นคำตอบของแฟน"
+              )}
             </p>
             <div className="flex shrink-0 gap-1.5">
               {editing && (
@@ -230,7 +236,7 @@ export function DailyQuestion({ onAnswered }: { onAnswered?: () => void }) {
           setData(null);
           setPast(null);
         }}
-        className="self-center text-[10px] text-zinc-400 hover:text-brand"
+        className="self-center text-[11px] text-zinc-400 hover:text-brand"
       >
         เครื่องนี้เป็นของ {PARTNERS[me]} · เปลี่ยน
       </button>

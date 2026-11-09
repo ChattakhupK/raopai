@@ -106,7 +106,7 @@ export function Slideshow({ photos, width, className = "", interval = 3500, cont
                 type="button"
                 aria-label={`รูปที่ ${k + 1}`}
                 onClick={() => setIndex(k)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${k === i ? "w-4 bg-white" : "w-1.5 bg-white/55"}`}
+                className={`h-1.5 rounded-full transition-colors duration-300 ${k === i ? "w-4 bg-white" : "w-1.5 bg-white/55"}`}
               />
             ))}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 import { fmt } from "@/lib/client";
 import type { Place } from "@/lib/types";
-import { HeartIcon, PlayIcon } from "./icons";
+import { ChevronRightIcon, HeartIcon, PlayIcon } from "./icons";
 import { isVideo, thumb } from "@/lib/photos";
 
 type Props = {
@@ -46,14 +46,16 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
       {onReview && places.length > 0 && (year ?? years[0]) && (
         <button
           onClick={() => onReview((year ?? years[0])!)}
-          className="group flex items-center gap-3 rounded-2xl bg-brand px-3.5 py-2.5 text-left text-white shadow-[0_6px_18px_rgba(225,29,46,0.25)] transition active:scale-[0.98]"
+          className="group flex items-center gap-3 rounded-2xl bg-brand px-3.5 py-2.5 text-left text-white transition active:scale-[0.98]"
         >
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/20 text-base">✨</span>
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/20">
+            <HeartIcon width={16} height={16} />
+          </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold">สรุปปี {fmt.year((year ?? years[0])!)}</span>
             <span className="block text-[11px] text-white/80">ย้อนดูความทรงจำของเราทั้งปี</span>
           </span>
-          <span className="text-white/70 transition group-hover:translate-x-0.5">›</span>
+          <ChevronRightIcon width={16} height={16} className="text-white/70 transition-transform group-hover:translate-x-0.5" />
         </button>
       )}
 

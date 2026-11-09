@@ -71,3 +71,12 @@ export const NoteIcon = (p: P) => (
     <path d="M12 15s-2.6-1.6-2.6-3.3c0-.8.6-1.4 1.4-1.4.5 0 .9.2 1.2.6.3-.4.7-.6 1.2-.6.8 0 1.4.6 1.4 1.4C14.6 13.4 12 15 12 15z" fill="currentColor" stroke="none" />
   </svg>
 );
+export const LockIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="5" y="11" width="14" height="9" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </svg>
+);
+export const ChevronRightIcon = (p: P) => (
+  <svg {...base(p)}><path d="m9 18 6-6-6-6" /></svg>
+);

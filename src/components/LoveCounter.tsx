@@ -88,7 +88,7 @@ export function LoveCounter({ className = "" }: { className?: string }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={`คบกันมา ${c.days} วัน`}
-        className="flex h-10 items-center gap-1 rounded-full bg-brand pl-3 pr-3.5 text-white shadow-[0_4px_14px_rgba(225,29,46,0.3)] transition active:scale-95"
+        className="flex h-10 items-center gap-1 rounded-full bg-brand pl-3 pr-3.5 text-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition active:scale-95"
       >
         <HeartIcon width={13} height={13} className="heartbeat" />
         <span className="text-sm font-semibold tabular-nums">{c.days.toLocaleString("th-TH")}</span>
@@ -96,13 +96,13 @@ export function LoveCounter({ className = "" }: { className?: string }) {
       </button>
 
       {open && (
-        <div className="animate-pop absolute right-0 top-12 w-60 overflow-hidden rounded-3xl bg-white shadow-[0_16px_40px_rgba(225,29,46,0.18)] ring-1 ring-brand/10">
-          {/* red header with floating hearts */}
+        <div className="animate-pop absolute right-0 top-12 w-60 overflow-hidden rounded-3xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
+          {/* red header with scattered hearts */}
           <div className="relative overflow-hidden bg-brand px-5 pb-5 pt-4 text-center text-white">
-            <HeartIcon width={22} height={22} className="float-heart absolute left-3 top-3 text-white/25" />
-            <HeartIcon width={14} height={14} className="float-heart absolute right-5 top-4 text-white/30 [animation-delay:.8s]" />
-            <HeartIcon width={30} height={30} className="float-heart absolute -bottom-2 right-2 text-white/15 [animation-delay:1.6s]" />
-            <HeartIcon width={12} height={12} className="float-heart absolute bottom-4 left-6 text-white/25 [animation-delay:2.2s]" />
+            <HeartIcon width={22} height={22} className="absolute left-3 top-3 -rotate-12 text-white/25" />
+            <HeartIcon width={14} height={14} className="absolute right-5 top-4 rotate-12 text-white/30" />
+            <HeartIcon width={30} height={30} className="absolute -bottom-2 right-2 -rotate-6 text-white/15" />
+            <HeartIcon width={12} height={12} className="absolute bottom-4 left-6 rotate-6 text-white/25" />
             <p className="text-xs text-white/85">เราคบกันมา</p>
             <p className="mt-0.5 text-5xl font-semibold tabular-nums tracking-tight">{c.days.toLocaleString("th-TH")}</p>
             <p className="text-sm text-white/90">{c.days >= 30 ? span : "วัน"}</p>
@@ -110,8 +110,8 @@ export function LoveCounter({ className = "" }: { className?: string }) {
 
           <div className="px-5 pb-4 pt-4">
             {c.celebrate && (
-              <p className="mb-3 rounded-full bg-brand-soft py-1.5 text-center text-sm font-medium text-brand">
-                วันนี้{c.celebrate} ♥
+              <p className="mb-3 flex items-center justify-center gap-1.5 rounded-full bg-brand-soft py-1.5 text-sm font-medium text-brand">
+                วันนี้{c.celebrate} <HeartIcon width={12} height={12} />
               </p>
             )}
             <div className="flex flex-col gap-3.5">
@@ -127,7 +127,7 @@ export function LoveCounter({ className = "" }: { className?: string }) {
                 </div>
               ))}
             </div>
-            <p className="mt-4 text-center text-[11px] text-muted">♥ ตั้งแต่ {fmt.date(ANNIVERSARY)} ♥</p>
+            <p className="mt-4 text-center text-[11px] text-muted">ตั้งแต่ {fmt.date(ANNIVERSARY)}</p>
           </div>
         </div>
       )}

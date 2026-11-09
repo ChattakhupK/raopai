@@ -69,7 +69,7 @@ export function Lightbox({ photos, start, onClose }: { photos: string[]; start: 
           </button>
           <div className="safe-bottom absolute bottom-0 left-0 right-0 flex justify-center gap-1.5 pb-4">
             {photos.map((_, k) => (
-              <span key={k} className={`h-1.5 rounded-full transition-all ${k === i ? "w-5 bg-white" : "w-1.5 bg-white/40"}`} />
+              <span key={k} className={`h-1.5 rounded-full transition-colors ${k === i ? "w-5 bg-white" : "w-1.5 bg-white/40"}`} />
             ))}
           </div>
         </>

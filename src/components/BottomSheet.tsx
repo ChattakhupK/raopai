@@ -80,7 +80,7 @@ export function BottomSheet({ children, initial = "half", onDismiss, fill = fals
 
   return (
     <div
-      className="animate-sheet absolute inset-x-0 bottom-0 z-[1050] flex flex-col rounded-t-[22px] bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.1)]"
+      className="animate-sheet absolute inset-x-0 bottom-0 z-[1050] flex flex-col rounded-t-3xl bg-white shadow-[0_-8px_30px_rgba(0,0,0,0.1)]"
       style={{
         height,
         transition: dragH == null ? "height 0.28s cubic-bezier(0.2, 0.9, 0.3, 1)" : "none",

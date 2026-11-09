@@ -101,25 +101,19 @@ body {
   45% { transform: scale(1.15); }
 }
 .heartbeat {
-  animation: heartbeat 1.8s ease-in-out infinite;
+  /* beats twice when it appears, then rests */
+  animation: heartbeat 1.8s ease-in-out 2;
   transform-origin: center;
-}
-@keyframes float-heart {
-  0%, 100% { transform: translateY(0) rotate(-8deg); }
-  50% { transform: translateY(-5px) rotate(8deg); }
-}
-.float-heart {
-  animation: float-heart 3.2s ease-in-out infinite;
 }
 @keyframes pop {
   from { opacity: 0; transform: translateY(-6px) scale(0.96); }
 }
 .animate-pop {
-  animation: pop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   transform-origin: top right;
 }
 @media (prefers-reduced-motion: reduce) {
-  .heartbeat, .float-heart, .animate-pop { animation: none; }
+  .heartbeat, .animate-pop { animation: none; }
 }
 
 /* Map popup card */
@@ -143,20 +137,8 @@ body {
 }
 /* animate the wrapper, not .leaflet-popup itself — Leaflet positions that with transform */
 .raopai-popup .leaflet-popup-content-wrapper {
-  animation: pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  animation: pop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   transform-origin: bottom center;
-}
-
-/* Floating note bubble */
-@keyframes note-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-.note-float {
-  animation: note-float 4s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .note-float { animation: none; }
 }
 
 /* Year review story progress */

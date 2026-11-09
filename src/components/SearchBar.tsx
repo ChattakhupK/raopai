@@ -93,7 +93,7 @@ export function SearchBar({ places, getCenter, onPickResult, onPickPlace }: Prop
         <div className="animate-fade absolute left-0 right-0 top-12 z-[1100] max-h-[60dvh] overflow-y-auto rounded-2xl bg-white p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
           {mine.length > 0 && (
             <>
-              <div className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-muted">ที่ที่เราเคยไป</div>
+              <div className="px-3 pb-1 pt-2 text-[11px] font-medium text-muted">ที่ที่เราเคยไป</div>
               {mine.map((p) => (
                 <button
                   key={p.id}
@@ -116,7 +116,7 @@ export function SearchBar({ places, getCenter, onPickResult, onPickPlace }: Prop
             </>
           )}
           {results.length > 0 && (
-            <div className="px-3 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wider text-muted">ผลการค้นหา</div>
+            <div className="px-3 pb-1 pt-2 text-[11px] font-medium text-muted">ผลการค้นหา</div>
           )}
           {results.map((r) => (
             <button

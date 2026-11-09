@@ -78,7 +78,7 @@ export function YearReview({ places, year, onClose }: { places: Place[]; year: s
           </div>
           <p className="mt-8 text-sm text-white/80">RaoPai Rewind</p>
           <p className="mt-1 text-5xl font-semibold tracking-tight">{beYear}</p>
-          <p className="mt-2 text-lg">ปีของเราสองคน ♥</p>
+          <p className="mt-2 text-lg">ปีของเราสองคน</p>
         </div>
       ),
     },
@@ -112,7 +112,7 @@ export function YearReview({ places, year, onClose }: { places: Place[]; year: s
                     style={{ height: `${Math.max(4, (n / maxMonth) * 100)}%` }}
                   />
                 </div>
-                <span className="text-[9px] text-muted">{MONTHS[m]}</span>
+                <span className="text-[11px] leading-none text-muted">{MONTHS[m]}</span>
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ export function YearReview({ places, year, onClose }: { places: Place[]; year: s
           <p className="mt-6 text-lg">ปีนี้เราอยู่ด้วยกันมา</p>
           <p className="text-6xl font-semibold tabular-nums">{s.daysTogether.toLocaleString("th-TH")}</p>
           <p className="text-lg">วัน</p>
-          <p className="mt-8 text-white/90">ขอบคุณที่ไปด้วยกันทุกที่นะ ♥</p>
+          <p className="mt-8 text-white/90">ขอบคุณที่ไปด้วยกันทุกที่นะ</p>
           <p className="mt-1 text-sm text-white/70">ปีหน้าไปไหนกันต่อดี</p>
         </div>
       ),

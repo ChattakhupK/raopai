@@ -24,7 +24,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center bg-white px-6">
       <div className="flex w-full max-w-xs flex-col items-center text-center">
-        <span className="grid size-16 place-items-center rounded-[22px] bg-brand text-white shadow-[0_12px_30px_rgba(225,29,46,0.35)]">
+        <span className="grid size-16 place-items-center rounded-3xl bg-brand text-white">
           <HeartIcon width={30} height={30} />
         </span>
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">RaoPai</h1>
