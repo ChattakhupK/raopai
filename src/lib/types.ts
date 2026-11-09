@@ -35,3 +35,11 @@ export type Note = {
 };
 
 export const NOTE_TTL_MS = 24 * 60 * 60 * 1000;
+
+export type DailyDay = {
+  day: string;
+  question: string;
+  mine: string | null;
+  theirs: string | null;
+  theirsAnswered: boolean;
+};

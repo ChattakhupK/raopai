@@ -13,7 +13,9 @@ import { LoveCounter } from "./LoveCounter";
 import { PlacePopup } from "./PlacePopup";
 import { Modal, releaseModalHistory } from "./Modal";
 import { BottomSheet } from "./BottomSheet";
-import { NotesPanel, NoteTicker } from "./Notes";
+import { NotesPanel, NoteTicker, type TalkTab } from "./Notes";
+import { readMe } from "./DailyQuestion";
+import { YearReview } from "./YearReview";
 import { HeartIcon, ListIcon, LocateIcon, NoteIcon, PlusIcon, Spinner } from "./icons";
 
 const MapView = dynamic(() => import("./MapView"), {
@@ -49,6 +51,9 @@ export default function App() {
   const [popupId, setPopupId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [reviewYear, setReviewYear] = useState<string | null>(null);
+  const [talkTab, setTalkTab] = useState<TalkTab>("notes");
+  const [dailyPending, setDailyPending] = useState(false);
   const [modalId, setModalId] = useState<string | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const isDesktop = useIsDesktop();
@@ -74,6 +79,15 @@ export default function App() {
       clearInterval(t);
       document.removeEventListener("visibilitychange", onVis);
     };
+  }, []);
+
+  // Has this device answered today's question yet? (drives the red dot)
+  useEffect(() => {
+    const me = readMe();
+    const check = me
+      ? api.daily(todayYMD(), me).then((d) => !d.mine)
+      : Promise.resolve(true);
+    check.then(setDailyPending).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -277,6 +291,7 @@ export default function App() {
             activeId={activeId}
             onSelect={selectPlace}
             loading={loading}
+            onReview={setReviewYear}
           />
         </>
       );
@@ -394,12 +409,14 @@ export default function App() {
             <button
               onClick={() => {
                 setNotesOpen(true);
+                if (dailyPending) setTalkTab("daily");
                 if (!isDesktop) setView(null); // one sheet at a time on phones
               }}
               aria-label="ข้อความถึงกัน"
-              className="grid size-10 place-items-center rounded-full bg-white text-zinc-600 shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition hover:text-brand"
+              className="relative grid size-10 place-items-center rounded-full bg-white text-zinc-600 shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition hover:text-brand"
             >
               <NoteIcon width={18} height={18} />
+              {dailyPending && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-white" />}
             </button>
             <button
               onClick={locate}
@@ -452,6 +469,10 @@ export default function App() {
       {notesOpen && !picking && (() => {
         const notesPanel = (
           <NotesPanel
+            tab={talkTab}
+            onTab={setTalkTab}
+            dailyPending={dailyPending}
+            onDailyAnswered={() => setDailyPending(false)}
             notes={notes}
             onClose={() => setNotesOpen(false)}
             onPost={async (text) => {
@@ -511,6 +532,8 @@ export default function App() {
           />
         </Modal>
       )}
+
+      {reviewYear && <YearReview places={places} year={reviewYear} onClose={() => setReviewYear(null)} />}
 
       {lightbox && <Lightbox photos={lightbox.photos} start={lightbox.index} onClose={() => setLightbox(null)} />}
     </div>

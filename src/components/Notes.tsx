@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NOTE_TTL_MS, type Note } from "@/lib/types";
 import { CloseIcon, HeartIcon, NoteIcon, Spinner } from "./icons";
+import { DailyQuestion } from "./DailyQuestion";
 
 const expiresAt = (n: Note) => new Date(n.createdAt).getTime() + NOTE_TTL_MS;
 
@@ -101,7 +102,14 @@ export function NoteTicker({ notes, onOpen }: { notes: Note[]; onOpen: () => voi
   );
 }
 
+export type TalkTab = "notes" | "daily";
+
 type PanelProps = {
+  tab: TalkTab;
+  onTab: (t: TalkTab) => void;
+  /** today's question is still unanswered on this device — shows a dot on the tab */
+  dailyPending?: boolean;
+  onDailyAnswered?: () => void;
   notes: Note[];
   onPost: (text: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -109,7 +117,7 @@ type PanelProps = {
 };
 
 /** The notes section: every live note (oldest → newest, like a chat) with a composer underneath. */
-export function NotesPanel({ notes, onPost, onDelete, onClose }: PanelProps) {
+export function NotesPanel({ tab, onTab, dailyPending, onDailyAnswered, notes, onPost, onDelete, onClose }: PanelProps) {
   const now = useNow();
   const active = activeNotes(notes, now).slice().reverse();
   const [text, setText] = useState("");
@@ -120,8 +128,8 @@ export function NotesPanel({ notes, onPost, onDelete, onClose }: PanelProps) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
-  }, [active.length]);
+    if (tab === "notes") endRef.current?.scrollIntoView({ block: "end" });
+  }, [active.length, tab]);
 
   async function send(e?: React.FormEvent) {
     e?.preventDefault();
@@ -141,15 +149,41 @@ export function NotesPanel({ notes, onPost, onDelete, onClose }: PanelProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center justify-between pb-2">
-        <h2 className="flex items-center gap-1.5 text-base font-semibold">
-          <NoteIcon width={18} height={18} className="text-brand" /> ข้อความถึงกัน
-        </h2>
+      <div className="flex shrink-0 items-center justify-between gap-2 pb-2">
+        <div role="tablist" className="flex rounded-full bg-zinc-100 p-0.5 text-sm">
+          {(
+            [
+              ["notes", "ข้อความ"],
+              ["daily", "คำถามวันนี้"],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => onTab(key)}
+              className={`relative h-8 rounded-full px-3.5 font-medium transition ${
+                tab === key ? "bg-white text-brand shadow-sm" : "text-zinc-500"
+              }`}
+            >
+              {label}
+              {key === "daily" && dailyPending && tab !== "daily" && (
+                <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-brand" />
+              )}
+            </button>
+          ))}
+        </div>
         <button onClick={onClose} aria-label="ปิด" className="grid size-8 place-items-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200">
           <CloseIcon width={16} height={16} />
         </button>
       </div>
 
+      {tab === "daily" ? (
+        <div className="no-scrollbar -mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-1">
+          <DailyQuestion onAnswered={onDailyAnswered} />
+        </div>
+      ) : (
+      <>
       <div className="no-scrollbar -mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-1">
         {active.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
@@ -224,6 +258,8 @@ export function NotesPanel({ notes, onPost, onDelete, onClose }: PanelProps) {
           </button>
         </div>
       </form>
+      </>
+      )}
     </div>
   );
 }

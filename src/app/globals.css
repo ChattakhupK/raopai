@@ -158,3 +158,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .note-float { animation: none; }
 }
+
+/* Year review story progress */
+@keyframes story-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.story-progress {
+  animation: story-progress linear forwards;
+}

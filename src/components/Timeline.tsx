@@ -12,9 +12,11 @@ type Props = {
   activeId: string | null;
   onSelect: (id: string) => void;
   loading: boolean;
+  /** open the year review for this year */
+  onReview?: (year: string) => void;
 };
 
-export function Timeline({ places, years, year, onYear, activeId, onSelect, loading }: Props) {
+export function Timeline({ places, years, year, onYear, activeId, onSelect, loading, onReview }: Props) {
   const groups: { key: string; label: string; items: Place[] }[] = [];
   for (const p of places) {
     const key = p.visitedOn.slice(0, 7);
@@ -39,6 +41,20 @@ export function Timeline({ places, years, year, onYear, activeId, onSelect, load
             </button>
           ))}
         </div>
+      )}
+
+      {onReview && places.length > 0 && (year ?? years[0]) && (
+        <button
+          onClick={() => onReview((year ?? years[0])!)}
+          className="group flex items-center gap-3 rounded-2xl bg-brand px-3.5 py-2.5 text-left text-white shadow-[0_6px_18px_rgba(225,29,46,0.25)] transition active:scale-[0.98]"
+        >
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/20 text-base">✨</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">สรุปปี {fmt.year((year ?? years[0])!)}</span>
+            <span className="block text-[11px] text-white/80">ย้อนดูความทรงจำของเราทั้งปี</span>
+          </span>
+          <span className="text-white/70 transition group-hover:translate-x-0.5">›</span>
+        </button>
       )}
 
       {loading && places.length === 0 && (

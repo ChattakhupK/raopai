@@ -1,5 +1,5 @@
 "use client";
-import type { Note, Place, PlaceInput, SearchResult } from "./types";
+import type { DailyDay, Note, Place, PlaceInput, SearchResult } from "./types";
 import { MAX_VIDEO_BYTES } from "./photos";
 
 type Signature = {
@@ -96,6 +96,12 @@ export const api = {
   postNote: (text: string) =>
     fetch("/api/notes", { method: "POST", body: JSON.stringify({ text }) }).then((r) => json<Note>(r)),
   deleteNote: (id: string) => fetch(`/api/notes/${id}`, { method: "DELETE" }).then((r) => json<{ ok: true }>(r)),
+  daily: (day: string, me: "a" | "b") =>
+    fetch(`/api/daily?day=${day}&me=${me}`, { cache: "no-store" }).then((r) => json<DailyDay>(r)),
+  dailyHistory: (day: string, me: "a" | "b") =>
+    fetch(`/api/daily?day=${day}&me=${me}&history=1`, { cache: "no-store" }).then((r) => json<DailyDay[]>(r)),
+  answerDaily: (day: string, me: "a" | "b", answer: string) =>
+    fetch("/api/daily", { method: "POST", body: JSON.stringify({ day, me, answer }) }).then((r) => json<DailyDay>(r)),
   usage: () =>
     fetch("/api/usage").then((r) =>
       json<{ usedPercent: number; warnPercent: number; blockPercent: number; storageBytes: number }>(r)
@@ -125,7 +131,6 @@ export async function resizeImage(file: File, max = 1800, quality = 0.82): Promi
 const dateFmt = new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short", year: "numeric" });
 const longFmt = new Intl.DateTimeFormat("th-TH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 const monthFmt = new Intl.DateTimeFormat("th-TH", { month: "long", year: "numeric" });
-const yearFmt = new Intl.DateTimeFormat("th-TH", { year: "numeric" });
 
 const toDate = (ymd: string) => {
   const [y, m, d] = ymd.split("-").map(Number);
@@ -136,7 +141,8 @@ export const fmt = {
   date: (ymd: string) => dateFmt.format(toDate(ymd)),
   long: (ymd: string) => longFmt.format(toDate(ymd)),
   month: (ymd: string) => monthFmt.format(toDate(ymd)),
-  year: (y: string) => yearFmt.format(new Date(Number(y), 0, 1)),
+  /** Buddhist-era year number only, e.g. "2569" */
+  year: (y: string) => String(Number(y) + 543),
 };
 
 export function todayYMD() {
