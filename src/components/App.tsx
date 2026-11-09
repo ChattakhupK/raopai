@@ -93,7 +93,7 @@ export default function App() {
       return;
     }
     api.daily(todayYMD(), me).then((d) => setDailyPending(!d.mine)).catch(() => {});
-    api.match(todayYMD(), me).then((d) => setMatchPending(d.mine === null)).catch(() => {});
+    api.match(todayYMD(), me).then((d) => setMatchPending(d.myDone < 5)).catch(() => {});
   }, []);
 
   useEffect(() => {

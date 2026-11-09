@@ -127,11 +127,14 @@ export const MATCH_QUESTIONS: MatchQuestion[] = [
 
 const START = Date.UTC(2026, 10, 9); // 9 Nov 2026
 
-/** Same either/or question for both people on a given local date (YYYY-MM-DD). */
-export function matchFor(day: string): MatchQuestion & { index: number } {
+/** Questions per day. */
+export const PER_DAY = 5;
+
+/** The `slot`-th (0–4) either/or question for a local date (YYYY-MM-DD); same for both people. */
+export function matchFor(day: string, slot: number): MatchQuestion & { index: number } {
   const [y, m, d] = day.split("-").map(Number);
   const n = Math.round((Date.UTC(y, m - 1, d) - START) / 86_400_000);
-  const index = ((n % MATCH_QUESTIONS.length) + MATCH_QUESTIONS.length) % MATCH_QUESTIONS.length;
+  const len = MATCH_QUESTIONS.length;
+  const index = (((n * PER_DAY + slot) % len) + len) % len;
   return { ...MATCH_QUESTIONS[index], index };
 }
-

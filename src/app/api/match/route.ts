@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMatch, pick, stats } from "@/lib/match";
+import { PER_DAY } from "@/lib/matchQuestions";
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const who = (v: unknown) => (v === "a" || v === "b" ? v : null);
@@ -18,15 +19,17 @@ export async function GET(req: Request) {
   }
 }
 
-// POST { day, me, choice: 0 | 1 } — first pick of the day is final
+// POST { day, me, slot: 0–4, choice: 0 | 1 } — the first pick for each question is final
 export async function POST(req: Request) {
-  const b = (await req.json().catch(() => ({}))) as { day?: unknown; me?: unknown; choice?: unknown };
+  const b = (await req.json().catch(() => ({}))) as { day?: unknown; me?: unknown; slot?: unknown; choice?: unknown };
   const day = typeof b.day === "string" ? b.day : "";
   const me = who(b.me);
+  const slot = typeof b.slot === "number" && Number.isInteger(b.slot) && b.slot >= 0 && b.slot < PER_DAY ? b.slot : null;
   const choice = b.choice === 0 || b.choice === 1 ? b.choice : null;
-  if (!DAY.test(day) || !me || choice === null) return NextResponse.json({ error: "bad request" }, { status: 400 });
+  if (!DAY.test(day) || !me || choice === null || slot === null)
+    return NextResponse.json({ error: "bad request" }, { status: 400 });
   try {
-    return NextResponse.json(await pick(day, me, choice));
+    return NextResponse.json(await pick(day, me, slot, choice));
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }

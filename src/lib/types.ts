@@ -44,15 +44,34 @@ export type DailyDay = {
   theirsAnswered: boolean;
 };
 
-export type MatchDay = {
-  day: string;
+export type MatchRound = {
+  slot: number;
   question: string;
   options: [string, string];
   mine: 0 | 1 | null;
-  /** revealed only after I've picked */
+  /** revealed only after I've picked this one */
   theirs: 0 | 1 | null;
   theirsAnswered: boolean;
   matched: boolean | null;
 };
 
-export type MatchStats = { played: number; matched: number; streak: number; history: MatchDay[] };
+export type MatchDay = {
+  day: string;
+  rounds: MatchRound[];
+  myDone: number;
+  theirsDone: number;
+  /** questions both answered / matched */
+  played: number;
+  matched: number;
+};
+
+export type MatchStats = {
+  /** questions both of us answered, and how many matched */
+  played: number;
+  matched: number;
+  /** days where all 5 matched */
+  perfectDays: number;
+  /** consecutive days we both finished all 5 */
+  streak: number;
+  history: MatchDay[];
+};

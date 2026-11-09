@@ -106,8 +106,10 @@ export const api = {
     fetch(`/api/match?day=${day}&me=${me}`, { cache: "no-store" }).then((r) => json<MatchDay>(r)),
   matchStats: (day: string, me: "a" | "b") =>
     fetch(`/api/match?day=${day}&me=${me}&stats=1`, { cache: "no-store" }).then((r) => json<MatchStats>(r)),
-  pickMatch: (day: string, me: "a" | "b", choice: 0 | 1) =>
-    fetch("/api/match", { method: "POST", body: JSON.stringify({ day, me, choice }) }).then((r) => json<MatchDay>(r)),
+  pickMatch: (day: string, me: "a" | "b", slot: number, choice: 0 | 1) =>
+    fetch("/api/match", { method: "POST", body: JSON.stringify({ day, me, slot, choice }) }).then((r) =>
+      json<MatchDay>(r)
+    ),
   usage: () =>
     fetch("/api/usage").then((r) =>
       json<{ usedPercent: number; warnPercent: number; blockPercent: number; storageBytes: number }>(r)

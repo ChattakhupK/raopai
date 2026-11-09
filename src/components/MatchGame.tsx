@@ -1,9 +1,11 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { api, fmt, todayYMD } from "@/lib/client";
-import type { MatchDay, MatchStats } from "@/lib/types";
-import { Bubble, readMe, WhoPicker, type Who } from "./DailyQuestion";
+import type { MatchDay, MatchRound, MatchStats } from "@/lib/types";
+import { readMe, WhoPicker, type Who } from "./DailyQuestion";
 import { HeartIcon, Spinner } from "./icons";
+
+const PER_DAY = 5;
 
 /** In development, `?matchday=YYYY-MM-DD` previews another day's round. */
 function pickDay() {
@@ -14,7 +16,37 @@ function pickDay() {
   return todayYMD();
 }
 
-/** "ทายใจตรงกัน" — pick one of two options; once both have picked, see whether we matched. */
+const opt = (r: MatchRound, c: 0 | 1 | null) => (c === null ? null : r.options[c]);
+
+/** One answered question as a compact row: question, both picks, and match mark. */
+function RoundRow({ r }: { r: MatchRound }) {
+  return (
+    <li className="flex items-start gap-2.5 rounded-2xl bg-zinc-50 px-3.5 py-2.5">
+      <span
+        className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${
+          r.matched === true
+            ? "bg-brand text-white"
+            : r.matched === false
+              ? "bg-zinc-200 text-zinc-500"
+              : "bg-white text-zinc-400 ring-1 ring-line"
+        }`}
+      >
+        {r.matched === true ? <HeartIcon width={10} height={10} /> : r.matched === false ? "✕" : r.slot + 1}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-medium leading-snug">{r.question}</p>
+        <p className="mt-0.5 text-[11px] text-muted">
+          <span className="text-brand">คุณ</span> {opt(r, r.mine) ?? "—"}
+          <span className="mx-1.5 text-zinc-300">·</span>
+          <span className="text-brand">แฟน</span>{" "}
+          {r.theirs !== null ? opt(r, r.theirs) : r.theirsAnswered ? "🤫" : "รอเลือก…"}
+        </p>
+      </div>
+    </li>
+  );
+}
+
+/** "ทายใจตรงกัน" — 5 either/or questions a day; once both have picked, see how many matched. */
 export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
   const [me, setMe] = useState<Who | null>(() => (typeof window === "undefined" ? null : readMe()));
   const [day] = useState(pickDay);
@@ -36,7 +68,7 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
     api.matchStats(day, me).then(setStats).catch(() => {});
   }, [me, day]);
 
-  // poll while waiting for the partner's pick
+  // poll while waiting for the partner
   useEffect(() => {
     load();
     const t = setInterval(load, 20_000);
@@ -45,12 +77,18 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
 
   if (!me) return <WhoPicker onPick={setMe} />;
 
+  const current = data?.rounds.find((r) => r.mine === null) ?? null;
+  const answered = data?.rounds.filter((r) => r.mine !== null) ?? [];
+  const finished = !!data && data.myDone === PER_DAY;
+  const allRevealed = !!data && data.played === PER_DAY;
+
   async function choose(c: 0 | 1) {
-    if (!me || !data || data.mine !== null || picking !== null) return;
+    if (!me || !current || picking !== null) return;
     setPicking(c);
     try {
-      setData(await api.pickMatch(day, me, c));
-      onPlayed?.();
+      const d = await api.pickMatch(day, me, current.slot, c);
+      setData(d);
+      if (d.myDone === PER_DAY) onPlayed?.();
       api.matchStats(day, me).then(setStats).catch(() => {});
     } catch (e) {
       setError((e as Error).message);
@@ -59,37 +97,88 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
     }
   }
 
-  const revealed = data?.matched === true || data?.matched === false;
   const pct = stats && stats.played ? Math.round((stats.matched / stats.played) * 100) : 0;
-
-  const opt = (d: MatchDay, c: 0 | 1 | null) => (c === null ? null : d.options[c]);
 
   return (
     <div className="flex flex-col gap-3 pb-2">
-      {/* same card as คำถามวันนี้, inverted (pink + red text) so the two games read as siblings */}
+      {/* question card — the inverted twin of คำถามวันนี้ */}
       <div className="relative overflow-hidden rounded-2xl bg-brand-soft px-4 pb-4 pt-3 text-brand ring-1 ring-brand/15">
         <span className="absolute right-3 top-3 flex">
           <HeartIcon width={18} height={18} />
           <HeartIcon width={18} height={18} className="-ml-1.5 text-brand/40" />
         </span>
         <p className="text-[11px] text-brand/70">ทายใจวันนี้ · {fmt.date(day)}</p>
-        <p className="mt-1 pr-10 text-[15px] font-medium leading-snug text-ink">{data?.question ?? "…"}</p>
-        <p className="mt-0.5 text-[11px] text-brand/70">เลือกให้ตรงใจกันนะ</p>
+
+        {!data && !error && (
+          <div className="grid place-items-center py-4">
+            <Spinner />
+          </div>
+        )}
+
+        {data && current && (
+          <>
+            <p key={current.slot} className="animate-fade mt-1 pr-10 text-[15px] font-medium leading-snug text-ink">
+              {current.question}
+            </p>
+            <p className="mt-0.5 text-[11px] text-brand/70">
+              ข้อ {current.slot + 1} จาก {PER_DAY} · เลือกให้ตรงใจกันนะ
+            </p>
+          </>
+        )}
+
+        {data && finished && (
+          <>
+            <p className="mt-1 text-[15px] font-medium leading-snug text-ink">
+              {allRevealed ? (
+                <>
+                  ใจตรงกัน <span className="text-brand">{data.matched}</span> จาก {PER_DAY} ข้อ
+                </>
+              ) : (
+                "ตอบครบ 5 ข้อแล้ว"
+              )}
+            </p>
+            <p className="mt-0.5 text-[11px] text-brand/70">
+              {allRevealed
+                ? data.matched === PER_DAY
+                  ? "รู้ใจกันทุกข้อเลย ♥"
+                  : data.matched >= 3
+                    ? "รู้ใจกันดีมาก"
+                    : "พรุ่งนี้มาลองใหม่นะ"
+                : `รอแฟนตอบอยู่ (${data.theirsDone}/${PER_DAY})`}
+            </p>
+          </>
+        )}
+
+        {/* progress */}
+        {data && (
+          <div className="mt-3 flex gap-1">
+            {data.rounds.map((r) => (
+              <span
+                key={r.slot}
+                className={`h-1 flex-1 rounded-full ${
+                  r.matched === true
+                    ? "bg-brand"
+                    : r.matched === false
+                      ? "bg-brand/30"
+                      : r.mine !== null
+                        ? "bg-brand/60"
+                        : r.slot === current?.slot
+                          ? "bg-brand/25"
+                          : "bg-white"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {!data && !error && (
-        <div className="grid place-items-center py-6 text-brand">
-          <Spinner />
-        </div>
-      )}
-
-      {/* pick */}
-      {data && data.mine === null && (
+      {/* choices for the current question */}
+      {data && current && (
         <div className="flex flex-col gap-2">
           <div className="grid grid-cols-2 gap-2">
-            {data.options.map((label, k) => (
+            {current.options.map((label, k) => (
               <button
-                key={k}
+                key={`${current.slot}-${k}`}
                 disabled={picking !== null}
                 onClick={() => choose(k as 0 | 1)}
                 className="flex min-h-14 items-center justify-center rounded-xl border border-brand/20 bg-white px-3 py-2.5 text-center text-sm transition hover:border-brand hover:bg-brand-soft active:scale-[0.98] disabled:opacity-60"
@@ -99,42 +188,34 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
             ))}
           </div>
           <p className="text-[11px] text-muted">
-            {data.theirsAnswered ? "แฟนเลือกแล้ว 🤫 เลือกก่อนถึงจะเห็นนะ" : "เลือกได้ครั้งเดียว เปลี่ยนไม่ได้นะ"}
+            {current.theirsAnswered ? "แฟนตอบข้อนี้แล้ว 🤫 เลือกก่อนถึงจะเห็นนะ" : "เลือกแล้วเปลี่ยนไม่ได้นะ"}
           </p>
         </div>
       )}
 
-      {/* picked */}
-      {data && data.mine !== null && (
-        <div className="flex flex-col gap-2">
-          <Bubble who="คุณ" text={opt(data, data.mine)} />
-          <Bubble who="แฟน" text={opt(data, data.theirs)} pending="ยังไม่ได้เลือก… รอแป๊บนะ" />
-          {revealed && (
-            <p
-              className={`animate-pop flex items-center justify-center gap-1.5 rounded-2xl py-2.5 text-sm font-medium ${
-                data.matched ? "bg-brand-soft text-brand" : "bg-zinc-50 text-zinc-500"
-              }`}
-            >
-              {data.matched ? <HeartIcon width={14} height={14} className="heartbeat" /> : "😅"}
-              {data.matched ? "ใจตรงกัน" : "ใจไม่ตรงกัน ไว้ลองใหม่พรุ่งนี้นะ"}
-            </p>
-          )}
-        </div>
+      {/* answered so far */}
+      {answered.length > 0 && (
+        <ul className="flex flex-col gap-1.5">
+          {answered.map((r) => (
+            <RoundRow key={r.slot} r={r} />
+          ))}
+        </ul>
       )}
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-brand-dark">{error}</p>}
 
       {stats && stats.played > 0 && (
         <p className="text-center text-[11px] text-muted">
-          ใจตรงกันแล้ว <span className="font-medium text-brand">{stats.matched}</span> จาก {stats.played} วัน ({pct}%)
-          {stats.streak > 1 && ` · 🔥 ติดกัน ${stats.streak} วัน`}
+          ใจตรงกันแล้ว <span className="font-medium text-brand">{stats.matched}</span> จาก {stats.played} ข้อ ({pct}%)
+          {stats.perfectDays > 0 && ` · ตรงครบ 5 ข้อ ${stats.perfectDays} วัน`}
+          {stats.streak > 1 && ` · 🔥 เล่นติดกัน ${stats.streak} วัน`}
         </p>
       )}
 
       {stats && stats.history.length > 0 && (
         <>
           <button onClick={() => setShowPast((v) => !v)} className="mt-1 self-center text-xs font-medium text-muted hover:text-brand">
-            {showPast ? "ซ่อนรอบที่ผ่านมา" : "ดูรอบที่ผ่านมา"}
+            {showPast ? "ซ่อนวันที่ผ่านมา" : "ดูวันที่ผ่านมา"}
           </button>
           {showPast && (
             <div className="flex flex-col gap-3">
@@ -142,15 +223,17 @@ export function MatchGame({ onPlayed }: { onPlayed?: () => void }) {
                 <div key={d.day} className="rounded-2xl border border-line p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[11px] text-muted">{fmt.date(d.day)}</p>
-                    <span className={`text-[11px] font-medium ${d.matched ? "text-brand" : "text-zinc-400"}`}>
-                      {d.matched ? "♥ ใจตรงกัน" : "ไม่ตรงกัน"}
+                    <span className="text-[11px] font-medium text-brand">
+                      ♥ ตรงกัน {d.matched}/{d.played}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-sm font-medium">{d.question}</p>
-                  <div className="mt-2 flex flex-col gap-1.5">
-                    <Bubble who="คุณ" text={opt(d, d.mine)} />
-                    <Bubble who="แฟน" text={opt(d, d.theirs)} pending="ไม่ได้เลือก" />
-                  </div>
+                  <ul className="mt-2 flex flex-col gap-1.5">
+                    {d.rounds
+                      .filter((r) => r.matched !== null)
+                      .map((r) => (
+                        <RoundRow key={r.slot} r={r} />
+                      ))}
+                  </ul>
                 </div>
               ))}
             </div>
