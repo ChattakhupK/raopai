@@ -22,13 +22,15 @@ type Props = {
   initial?: Snap;
   /** Called when dragged below the lowest snap. Omit to make the sheet non-dismissible by dragging. */
   onDismiss?: () => void;
+  /** Children fill the sheet and handle their own scrolling (e.g. a chat with a pinned composer). */
+  fill?: boolean;
 };
 
 /**
  * Mobile bottom sheet that can be dragged between three heights.
  * Drag the handle (or tap it to step up / back down); content scrolls inside.
  */
-export function BottomSheet({ children, initial = "half", onDismiss }: Props) {
+export function BottomSheet({ children, initial = "half", onDismiss, fill = false }: Props) {
   const vh = useViewportHeight();
   const [snap, setSnap] = useState<Snap>(initial);
   const [dragH, setDragH] = useState<number | null>(null);
@@ -103,7 +105,11 @@ export function BottomSheet({ children, initial = "half", onDismiss }: Props) {
       >
         <span className="h-1 w-9 rounded-full bg-zinc-300" />
       </div>
-      <div className="safe-bottom min-h-0 flex-1 overflow-y-auto overscroll-contain px-4">{children}</div>
+      <div
+        className={`safe-bottom min-h-0 flex-1 overscroll-contain px-4 ${fill ? "flex flex-col overflow-hidden" : "overflow-y-auto"}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }

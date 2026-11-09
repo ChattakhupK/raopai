@@ -27,3 +27,11 @@ export type SearchResult = {
   lat: number;
   lng: number;
 };
+
+export type Note = {
+  id: string;
+  text: string;
+  createdAt: string; // ISO timestamp — note is visible for 24h from here
+};
+
+export const NOTE_TTL_MS = 24 * 60 * 60 * 1000;

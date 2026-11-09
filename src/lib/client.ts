@@ -1,5 +1,5 @@
 "use client";
-import type { Place, PlaceInput, SearchResult } from "./types";
+import type { Note, Place, PlaceInput, SearchResult } from "./types";
 import { MAX_VIDEO_BYTES } from "./photos";
 
 type Signature = {
@@ -92,6 +92,10 @@ export const api = {
       throw e;
     }
   },
+  notes: () => fetch("/api/notes", { cache: "no-store" }).then((r) => json<Note[]>(r)),
+  postNote: (text: string) =>
+    fetch("/api/notes", { method: "POST", body: JSON.stringify({ text }) }).then((r) => json<Note>(r)),
+  deleteNote: (id: string) => fetch(`/api/notes/${id}`, { method: "DELETE" }).then((r) => json<{ ok: true }>(r)),
   usage: () =>
     fetch("/api/usage").then((r) =>
       json<{ usedPercent: number; warnPercent: number; blockPercent: number; storageBytes: number }>(r)

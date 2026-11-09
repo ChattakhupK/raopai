@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type L from "leaflet";
 import { api, todayYMD } from "@/lib/client";
-import type { Place, SearchResult } from "@/lib/types";
+import type { Note, Place, SearchResult } from "@/lib/types";
 import { SearchBar } from "./SearchBar";
 import { Timeline } from "./Timeline";
 import { PlaceDetail } from "./PlaceDetail";
@@ -13,7 +13,8 @@ import { LoveCounter } from "./LoveCounter";
 import { PlacePopup } from "./PlacePopup";
 import { Modal, releaseModalHistory } from "./Modal";
 import { BottomSheet } from "./BottomSheet";
-import { HeartIcon, ListIcon, LocateIcon, PlusIcon, Spinner } from "./icons";
+import { NotesPanel, NoteTicker } from "./Notes";
+import { HeartIcon, ListIcon, LocateIcon, NoteIcon, PlusIcon, Spinner } from "./icons";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -46,6 +47,8 @@ export default function App() {
   const [lightbox, setLightbox] = useState<{ photos: string[]; index: number } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [popupId, setPopupId] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [notesOpen, setNotesOpen] = useState(false);
   const [modalId, setModalId] = useState<string | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const isDesktop = useIsDesktop();
@@ -58,6 +61,19 @@ export default function App() {
       .then(setPlaces)
       .catch((e) => setLoadError((e as Error).message))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Shared notes: load now, then refresh every minute and whenever the app comes back to the foreground.
+  useEffect(() => {
+    const load = () => api.notes().then(setNotes).catch(() => {});
+    load();
+    const t = setInterval(load, 60_000);
+    const onVis = () => document.visibilityState === "visible" && load();
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, []);
 
   useEffect(() => {
@@ -364,7 +380,10 @@ export default function App() {
       {!picking && (shown === null || isDesktop) && (
         <div className="safe-bottom pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-between gap-2 px-4 pb-1 md:justify-end md:pb-7 md:pr-6">
           <button
-            onClick={() => setView({ kind: "list" })}
+            onClick={() => {
+              setView({ kind: "list" });
+              setNotesOpen(false);
+            }}
             className="pointer-events-auto flex h-10 items-center gap-1.5 rounded-full bg-white px-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 md:hidden"
           >
             <ListIcon width={16} height={16} className="shrink-0" />
@@ -372,6 +391,16 @@ export default function App() {
             <span className="hidden whitespace-nowrap min-[400px]:inline">{stats}</span>
           </button>
           <div className="pointer-events-auto flex items-center gap-2">
+            <button
+              onClick={() => {
+                setNotesOpen(true);
+                if (!isDesktop) setView(null); // one sheet at a time on phones
+              }}
+              aria-label="ข้อความถึงกัน"
+              className="grid size-10 place-items-center rounded-full bg-white text-zinc-600 shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition hover:text-brand"
+            >
+              <NoteIcon width={18} height={18} />
+            </button>
             <button
               onClick={locate}
               aria-label="ตำแหน่งของฉัน"
@@ -417,6 +446,38 @@ export default function App() {
           {toast}
         </div>
       )}
+
+      {!picking && !notesOpen && <NoteTicker notes={notes} onOpen={() => setNotesOpen(true)} />}
+
+      {notesOpen && !picking && (() => {
+        const notesPanel = (
+          <NotesPanel
+            notes={notes}
+            onClose={() => setNotesOpen(false)}
+            onPost={async (text) => {
+              const n = await api.postNote(text);
+              setNotes((l) => [n, ...l]);
+            }}
+            onDelete={async (id) => {
+              try {
+                await api.deleteNote(id);
+                setNotes((l) => l.filter((x) => x.id !== id));
+              } catch (e) {
+                setToast((e as Error).message);
+              }
+            }}
+          />
+        );
+        return isDesktop ? (
+          <div className="animate-sheet absolute bottom-20 right-4 top-16 z-[1060] flex w-[320px] flex-col rounded-2xl bg-white px-4 pb-3 pt-3 shadow-[0_4px_20px_rgba(0,0,0,0.08)] ring-1 ring-black/5">
+            {notesPanel}
+          </div>
+        ) : (
+          <BottomSheet key="notes" initial="half" onDismiss={() => setNotesOpen(false)} fill>
+            {notesPanel}
+          </BottomSheet>
+        );
+      })()}
 
       {modalPlace && (
         <Modal label={modalPlace.name} onClose={() => setModalId(null)}>

@@ -5,7 +5,7 @@ import { isOwnPhotoUrl } from "./photos";
 
 let cached: SupabaseClient | null = null;
 
-function db() {
+export function db() {
   if (cached) return cached;
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   // Prefer the secret key (bypasses RLS). The publishable key also works if

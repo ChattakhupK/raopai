@@ -146,3 +146,15 @@ body {
   animation: pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
   transform-origin: bottom center;
 }
+
+/* Floating note bubble */
+@keyframes note-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.note-float {
+  animation: note-float 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .note-float { animation: none; }
+}
