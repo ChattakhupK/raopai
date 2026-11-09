@@ -17,7 +17,42 @@ export function readMe(): Who | null {
   }
 }
 
-function Bubble({ who, text, pending }: { who: string; text: string | null; pending?: string }) {
+export function saveMe(w: Who) {
+  try {
+    localStorage.setItem(ME_KEY, w);
+  } catch {}
+}
+
+/** "Whose phone is this?" — chosen once per device, shared by the daily question and the match game. */
+export function WhoPicker({ onPick }: { onPick: (w: Who) => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-6 text-center">
+      <span className="grid size-12 place-items-center rounded-full bg-brand-soft text-brand">
+        <HeartIcon width={20} height={20} />
+      </span>
+      <div>
+        <p className="font-medium">เครื่องนี้เป็นของใคร</p>
+        <p className="mt-0.5 text-xs text-muted">เลือกครั้งเดียว ใช้แยกคำตอบของแต่ละคน</p>
+      </div>
+      <div className="grid w-full grid-cols-2 gap-2">
+        {(["a", "b"] as const).map((w) => (
+          <button
+            key={w}
+            onClick={() => {
+              saveMe(w);
+              onPick(w);
+            }}
+            className="h-11 rounded-xl bg-brand-soft text-sm font-medium text-brand transition hover:bg-brand hover:text-white"
+          >
+            {PARTNERS[w]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function Bubble({ who, text, pending }: { who: string; text: string | null; pending?: string }) {
   return (
     <div className="rounded-2xl bg-zinc-50 px-3.5 py-2.5">
       <p className="text-[11px] font-medium text-brand">{who}</p>
@@ -65,35 +100,7 @@ export function DailyQuestion({ onAnswered }: { onAnswered?: () => void }) {
     api.dailyHistory(today, me).then(setPast).catch(() => setPast([]));
   }, [me, showPast, past, today]);
 
-  if (!me) {
-    return (
-      <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <span className="grid size-12 place-items-center rounded-full bg-brand-soft text-brand">
-          <HeartIcon width={20} height={20} />
-        </span>
-        <div>
-          <p className="font-medium">เครื่องนี้เป็นของใคร</p>
-          <p className="mt-0.5 text-xs text-muted">เลือกครั้งเดียว ใช้แยกคำตอบของแต่ละคน</p>
-        </div>
-        <div className="grid w-full grid-cols-2 gap-2">
-          {(["a", "b"] as const).map((w) => (
-            <button
-              key={w}
-              onClick={() => {
-                try {
-                  localStorage.setItem(ME_KEY, w);
-                } catch {}
-                setMe(w);
-              }}
-              className="h-11 rounded-xl bg-brand-soft text-sm font-medium text-brand transition hover:bg-brand hover:text-white"
-            >
-              {PARTNERS[w]}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (!me) return <WhoPicker onPick={setMe} />;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

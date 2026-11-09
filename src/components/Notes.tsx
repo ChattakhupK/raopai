@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { NOTE_TTL_MS, type Note } from "@/lib/types";
 import { CloseIcon, HeartIcon, NoteIcon, Spinner } from "./icons";
 import { DailyQuestion } from "./DailyQuestion";
+import { MatchGame } from "./MatchGame";
 
 const expiresAt = (n: Note) => new Date(n.createdAt).getTime() + NOTE_TTL_MS;
 
@@ -102,14 +103,16 @@ export function NoteTicker({ notes, onOpen }: { notes: Note[]; onOpen: () => voi
   );
 }
 
-export type TalkTab = "notes" | "daily";
+export type TalkTab = "notes" | "daily" | "match";
 
 type PanelProps = {
   tab: TalkTab;
   onTab: (t: TalkTab) => void;
-  /** today's question is still unanswered on this device — shows a dot on the tab */
+  /** today's question / match still unanswered on this device — shows a dot on the tab */
   dailyPending?: boolean;
   onDailyAnswered?: () => void;
+  matchPending?: boolean;
+  onMatchPlayed?: () => void;
   notes: Note[];
   onPost: (text: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
@@ -117,7 +120,18 @@ type PanelProps = {
 };
 
 /** The notes section: every live note (oldest → newest, like a chat) with a composer underneath. */
-export function NotesPanel({ tab, onTab, dailyPending, onDailyAnswered, notes, onPost, onDelete, onClose }: PanelProps) {
+export function NotesPanel({
+  tab,
+  onTab,
+  dailyPending,
+  onDailyAnswered,
+  matchPending,
+  onMatchPlayed,
+  notes,
+  onPost,
+  onDelete,
+  onClose,
+}: PanelProps) {
   const now = useNow();
   const active = activeNotes(notes, now).slice().reverse();
   const [text, setText] = useState("");
@@ -154,7 +168,8 @@ export function NotesPanel({ tab, onTab, dailyPending, onDailyAnswered, notes, o
           {(
             [
               ["notes", "ข้อความ"],
-              ["daily", "คำถามวันนี้"],
+              ["daily", "คำถาม"],
+              ["match", "ทายใจ"],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -162,12 +177,12 @@ export function NotesPanel({ tab, onTab, dailyPending, onDailyAnswered, notes, o
               role="tab"
               aria-selected={tab === key}
               onClick={() => onTab(key)}
-              className={`relative h-8 rounded-full px-3.5 font-medium transition ${
+              className={`relative h-8 rounded-full px-3 font-medium transition ${
                 tab === key ? "bg-white text-brand shadow-sm" : "text-zinc-500"
               }`}
             >
               {label}
-              {key === "daily" && dailyPending && tab !== "daily" && (
+              {((key === "daily" && dailyPending) || (key === "match" && matchPending)) && tab !== key && (
                 <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-brand" />
               )}
             </button>
@@ -181,6 +196,10 @@ export function NotesPanel({ tab, onTab, dailyPending, onDailyAnswered, notes, o
       {tab === "daily" ? (
         <div className="no-scrollbar -mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-1">
           <DailyQuestion onAnswered={onDailyAnswered} />
+        </div>
+      ) : tab === "match" ? (
+        <div className="no-scrollbar -mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-1">
+          <MatchGame onPlayed={onMatchPlayed} />
         </div>
       ) : (
       <>

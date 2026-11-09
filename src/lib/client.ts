@@ -1,5 +1,5 @@
 "use client";
-import type { DailyDay, Note, Place, PlaceInput, SearchResult } from "./types";
+import type { DailyDay, MatchDay, MatchStats, Note, Place, PlaceInput, SearchResult } from "./types";
 import { MAX_VIDEO_BYTES } from "./photos";
 
 type Signature = {
@@ -102,6 +102,12 @@ export const api = {
     fetch(`/api/daily?day=${day}&me=${me}&history=1`, { cache: "no-store" }).then((r) => json<DailyDay[]>(r)),
   answerDaily: (day: string, me: "a" | "b", answer: string) =>
     fetch("/api/daily", { method: "POST", body: JSON.stringify({ day, me, answer }) }).then((r) => json<DailyDay>(r)),
+  match: (day: string, me: "a" | "b") =>
+    fetch(`/api/match?day=${day}&me=${me}`, { cache: "no-store" }).then((r) => json<MatchDay>(r)),
+  matchStats: (day: string, me: "a" | "b") =>
+    fetch(`/api/match?day=${day}&me=${me}&stats=1`, { cache: "no-store" }).then((r) => json<MatchStats>(r)),
+  pickMatch: (day: string, me: "a" | "b", choice: 0 | 1) =>
+    fetch("/api/match", { method: "POST", body: JSON.stringify({ day, me, choice }) }).then((r) => json<MatchDay>(r)),
   usage: () =>
     fetch("/api/usage").then((r) =>
       json<{ usedPercent: number; warnPercent: number; blockPercent: number; storageBytes: number }>(r)

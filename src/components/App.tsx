@@ -54,6 +54,7 @@ export default function App() {
   const [reviewYear, setReviewYear] = useState<string | null>(null);
   const [talkTab, setTalkTab] = useState<TalkTab>("notes");
   const [dailyPending, setDailyPending] = useState(false);
+  const [matchPending, setMatchPending] = useState(false);
   const [modalId, setModalId] = useState<string | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const isDesktop = useIsDesktop();
@@ -84,10 +85,15 @@ export default function App() {
   // Has this device answered today's question yet? (drives the red dot)
   useEffect(() => {
     const me = readMe();
-    const check = me
-      ? api.daily(todayYMD(), me).then((d) => !d.mine)
-      : Promise.resolve(true);
-    check.then(setDailyPending).catch(() => {});
+    if (!me) {
+      setTimeout(() => {
+        setDailyPending(true);
+        setMatchPending(true);
+      }, 0);
+      return;
+    }
+    api.daily(todayYMD(), me).then((d) => setDailyPending(!d.mine)).catch(() => {});
+    api.match(todayYMD(), me).then((d) => setMatchPending(d.mine === null)).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -410,13 +416,14 @@ export default function App() {
               onClick={() => {
                 setNotesOpen(true);
                 if (dailyPending) setTalkTab("daily");
+                else if (matchPending) setTalkTab("match");
                 if (!isDesktop) setView(null); // one sheet at a time on phones
               }}
               aria-label="ข้อความถึงกัน"
               className="relative grid size-10 place-items-center rounded-full bg-white text-zinc-600 shadow-[0_2px_12px_rgba(0,0,0,0.08)] ring-1 ring-black/5 transition hover:text-brand"
             >
               <NoteIcon width={18} height={18} />
-              {dailyPending && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-white" />}
+              {(dailyPending || matchPending) && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-brand ring-2 ring-white" />}
             </button>
             <button
               onClick={locate}
@@ -473,6 +480,8 @@ export default function App() {
             onTab={setTalkTab}
             dailyPending={dailyPending}
             onDailyAnswered={() => setDailyPending(false)}
+            matchPending={matchPending}
+            onMatchPlayed={() => setMatchPending(false)}
             notes={notes}
             onClose={() => setNotesOpen(false)}
             onPost={async (text) => {

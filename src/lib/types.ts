@@ -43,3 +43,16 @@ export type DailyDay = {
   theirs: string | null;
   theirsAnswered: boolean;
 };
+
+export type MatchDay = {
+  day: string;
+  question: string;
+  options: [string, string];
+  mine: 0 | 1 | null;
+  /** revealed only after I've picked */
+  theirs: 0 | 1 | null;
+  theirsAnswered: boolean;
+  matched: boolean | null;
+};
+
+export type MatchStats = { played: number; matched: number; streak: number; history: MatchDay[] };
