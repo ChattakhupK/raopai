@@ -2,4 +2,4 @@
 export const ANNIVERSARY = "2026-08-10";
 
 /** ชื่อเรียกของสองคน ใช้ตอนเลือกว่า "เครื่องนี้เป็นของใคร" ในคำถามประจำวัน — แก้ได้ */
-export const PARTNERS = { a: "คนที่ 1", b: "คนที่ 2" } as const;
+export const PARTNERS = { a: "ฟลุ๊ค", b: "ยีน" } as const;
